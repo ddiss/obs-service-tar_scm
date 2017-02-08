@@ -29,6 +29,9 @@ import sys
 import tarfile
 import tempfile
 import dateutil.parser
+# pipes.quote() is deprecated, use shlex.quote with python >= 3.3
+# http://bugs.python.org/issue9723
+from pipes import quote
 
 try:
     # not possible to test this on travis atm
@@ -276,12 +279,12 @@ class TarSCM:
             git_cmd = ['git', 'describe', '--exact-match', 'HEAD']
             (ret, output) = self.helpers.safe_run(git_cmd, cwd=repodir)
             # HEAD corresponds to a tag, verify it
-            tag = output.strip()
+            tag = quote(output.strip())
 
             # create a tempdir to use as GPGHOME for key import and verification
             tmp_dir = tempfile.mkdtemp()
 
-            gpg_cmd = ['gpg', '--homedir', tmp_dir, '--import', key]
+            gpg_cmd = ['gpg', '--homedir', tmp_dir, '--import', quote(key)]
             git_cmd = ['git', 'verify-tag', tag]
             # set GNUPGHOME env to override GPG key directory for git verify-tag
             env = os.environ.copy()
